@@ -1,4 +1,4 @@
 apiVersion: v1
 description: A Helm chart for Kubernetes
-name: cartao
+name: operacoes-cartao
 version: 1.0.0
