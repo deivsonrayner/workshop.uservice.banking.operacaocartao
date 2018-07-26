@@ -7,16 +7,25 @@
       <feature>servlet-3.1</feature>
       <feature>managedBeans-1.0</feature>
       <feature>websocket-1.1</feature>
+      <feature>mongodb-2.0</feature>
+      <feature>apiDiscovery-1.0</feature>
   </featureManager>
 
   <httpEndpoint httpPort="${default.http.port}" httpsPort="${default.https.port}"
       id="defaultHttpEndpoint" host="*" />
 
-
+	<library id="MongoLib">
+	   <file name="${server.config.dir}/lib/mongo-java-driver-2.14.2.jar" />
+	</library>
+	
+	<mongo id="mongo" libraryRef="MongoLib" hostNames="localhost" ports="27017"/>
+	<mongoDB jndiName="dataservice/remote/cartoes" mongoRef="mongo" databaseName="cartoesdb" />
 
   <!-- Automatically expand WAR files and EAR files -->
   <applicationManager autoExpand="true"/>
 
-  <webApplication name="operacaocartao" location="${app.location}"/>
+  <webApplication name="operacaocartao" location="${app.location}">
+  	<classloader commonLibraryRef="MongoLib"/>
+  </webApplication>
 
 </server>
