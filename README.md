@@ -63,3 +63,4 @@ This project was generated using:
 * generator-ibm-service-enablement v0.7.0
 * generator-ibm-cloud-enablement v^0.13.7
 * generator-ibm-java-liberty v8.6.2
+# workshop.uservice.banking.operacaocartao
