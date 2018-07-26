@@ -15,7 +15,7 @@
       id="defaultHttpEndpoint" host="*" />
 
 	<library id="MongoLib">
-	   <file name="${server.config.dir}/lib/mongo-java-driver-2.14.2.jar" />
+	   <file name="${server.config.dir}/lib/mongo-java-driver-3.8.0.jar" />
 	</library>
 	
 	<mongo id="mongo" libraryRef="MongoLib" hostNames="localhost" ports="27017"/>
