@@ -56,9 +56,9 @@ public class CartoesService {
 		
 		MongoCollection<DBObject> collection = (MongoCollection<DBObject>) dataservice.getCollection("cartoes");
 		Collection<String> listCPF = new ArrayList<String>();
+		Collection<Cartao> cartoes = GeradorCartaoUtil.gerarCartao();
 		
-		for (int idx = 0; idx < 50; idx++) {
-			Cartao cartao = GeradorCartaoUtil.gerarCartao();
+		for (Cartao cartao : cartoes) {
 			
 			DBObject document = BasicDBObjectBuilder.start()
 					.add("bloqueado", cartao.bloqueado)
