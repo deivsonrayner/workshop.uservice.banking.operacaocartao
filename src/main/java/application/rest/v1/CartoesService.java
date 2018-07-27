@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.annotation.Resource;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -13,14 +12,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.bson.BasicBSONEncoder;
-import org.bson.BasicBSONObject;
 import org.bson.Document;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DB;
-import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -29,7 +22,6 @@ import com.mongodb.client.MongoDatabase;
 
 import application.model.v1.Cartao;
 import application.util.GeradorCartaoUtil;
-import junit.framework.TestResult;
 
 @Path("v1/cartoes")
 public class CartoesService {
