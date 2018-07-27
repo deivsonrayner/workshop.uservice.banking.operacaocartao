@@ -77,7 +77,7 @@ public class GeradorCartaoUtil {
 				cartao.nomeTitular = nome;
 				cartao.numero = new String(getRandomNumberInRange(1000, 9999)+" ") + new String(getRandomNumberInRange(1000, 9999)+" ") + new String(getRandomNumberInRange(1000, 9999)+" ") + new String(getRandomNumberInRange(1000, 9999)+"");
 				cartao.id = cartao.numero.trim();
-				cartao.saldo = new BigDecimal(getRandomNumberInRange(1000, 20000));
+				cartao.saldo = new Double(getRandomNumberInRange(1000, 20000));
 				cartao.validade = new Date(getRandomNumberInRange(2019, 2026), getRandomNumberInRange(01, 12), getRandomNumberInRange(1, 28));
 				cartoes.add(cartao);
 			}	
