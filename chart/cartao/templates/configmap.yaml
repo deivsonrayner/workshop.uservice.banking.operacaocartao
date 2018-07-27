@@ -6,6 +6,4 @@ metadata:
     chart: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
 data:
   MONGO_REMOTE_URL: "mongodb://169.57.160.83:27017"
-  MONGO_LOCAL_URL: "mongodb://169.60.185.3:30851"
-  MONGO_USER: "mongo"
-  MONGO_PSWD: "mongo"  
+  MONGO_LOCAL_URL: "mongodb://mongo:mongo@169.60.185.3:30851"
