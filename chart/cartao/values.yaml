@@ -16,7 +16,7 @@ service:
   servicePort: 9080
   servicePortHttps: 9443
 hpa:
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 4
   metrics:
