@@ -47,8 +47,9 @@ public class CartoesService {
 	
 	
 	 @GET
+	 @Path("listar")
 	 @Produces(MediaType.APPLICATION_JSON)
-	public Response listarcartoes( @PathParam("cpf") String cpf) {
+	public Response listarcartoes( @QueryParam("cpf") String cpf) {
 		MongoCollection<Document> collection = this.getCollection("cartoes");
 		FindIterable<Document> result =  collection.find(new Document("cpfTitular",cpf));
 		Collection<Cartao> cartaoCol = new ArrayList<Cartao>();
