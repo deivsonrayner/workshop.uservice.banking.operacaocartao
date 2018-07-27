@@ -1,12 +1,11 @@
 package application.rest.v1;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -15,6 +14,8 @@ import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -25,36 +26,50 @@ import com.mongodb.client.MongoDatabase;
 import application.model.v1.Cartao;
 import application.util.GeradorCartaoUtil;
 
+@ApplicationScoped
 @Path("v1/cartoes")
 public class CartoesService {
+
 	
-	protected static MongoClient mongoClient = null;
-	
-	public MongoClient getMongoClient() {
-		if (this.mongoClient == null) {
-			this.mongoClient = MongoClients.create(this.getMongoHost());
+	protected static MongoClient mongoRemoteClient = null;
+	protected static MongoClient mongoLocalClient = null;
+
+	public MongoClient getMongoClient(boolean isLocal) {
+		if (isLocal) {
+			if (this.mongoLocalClient == null) {
+				this.mongoLocalClient = MongoClients.create(this.getMongoLocalHost());
+			}
+			return this.mongoLocalClient;
+		} else {
+			if (this.mongoRemoteClient == null) {
+				this.mongoRemoteClient = MongoClients.create(this.getMongoRemoteHost());
+			}
+			return this.mongoRemoteClient;
 		}
-		
-		return this.mongoClient;
 	}
-	
-	public String getMongoHost() {
+
+	public String getMongoRemoteHost() {
 		Config config = ConfigProvider.getConfig();
 		return config.getValue("MONGO_REMOTE_URL", String.class);
 	}
 	
-	public MongoCollection<Document> getCollection(String name) {
-		MongoDatabase dataservice = this.getMongoClient().getDatabase("operacoescartaodbv10");
-		return  (MongoCollection<Document>) dataservice.getCollection(name);
+	public String getMongoLocalHost() {
+		Config config = ConfigProvider.getConfig();
+		return config.getValue("MONGO_LOCAL_URL", String.class);
 	}
+
+	public MongoCollection<Document> getCollection(String name, boolean isLocal) {
+		MongoDatabase dataservice = this.getMongoClient(isLocal).getDatabase("operacoescartaodbv10");
+		return (MongoCollection<Document>) dataservice.getCollection(name);
+	}
+
 	
-	
-	 @GET
-	 @Path("listar")
-	 @Produces(MediaType.APPLICATION_JSON)
-	public Response listarcartoes( @QueryParam("cpf") String cpf) {
-		MongoCollection<Document> collection = this.getCollection("cartoes");
-		FindIterable<Document> result =  collection.find(new Document("cpfTitular",cpf));
+	@GET
+	@Path("listar")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response listarcartoes(@QueryParam("cpf") String cpf) {
+		Document pesquisa = new Document("cpfTitular", cpf);
+		FindIterable<Document> result = this.pesquisar(pesquisa, "cartoes");
 		Collection<Cartao> cartaoCol = new ArrayList<Cartao>();
 		
 		for (Document document : result) {
@@ -69,49 +84,57 @@ public class CartoesService {
 			cartao.validade = document.getDate("validade");
 			cartaoCol.add(cartao);
 		}
-		
+
 		return Response.ok(cartaoCol).build();
-		
 	}
 	
+	@Fallback(fallbackMethod="pesquisarFallBack")
+	@CircuitBreaker(requestVolumeThreshold=2, failureRatio=0.50, delay=5000, successThreshold=2)
+	public FindIterable<Document> pesquisar(Document document, String collectionName) {
+		MongoCollection<Document> collection = this.getCollection("cartoes",false);
+		FindIterable<Document> result = collection.find(document);
+		
+		return result;
+	}
+	
+	public FindIterable<Document> pesquisarFallBack(Document document, String collectionName) {
+		MongoCollection<Document> collection = this.getCollection("cartoes",true);
+		FindIterable<Document> result = collection.find(document);
+		
+		return result;
+	}
+	
+
 	public void dataserviceOperation() {
-		
+
 	}
-	
+
 	public void dataserviceOperationFallBack() {
-		
+
 	}
-	
-	
-	 @GET
-	 @Path("carregardados")
-	 @Produces(MediaType.APPLICATION_JSON)
+
+	@GET
+	@Path("carregardados")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response cargaDados(@QueryParam("isLocal") Boolean local) {
-		 
-		MongoCollection<Document> collection = this.getCollection("cartoes");
-		
+
+		MongoCollection<Document> collection = this.getCollection("cartoes", local);
+
 		Collection<String> listCPF = new ArrayList<String>();
 		Collection<Cartao> cartoes = GeradorCartaoUtil.gerarCartao();
-		
+
 		for (Cartao cartao : cartoes) {
-			
-			Document document = new Document()
-					.append("bloqueado", cartao.bloqueado)
-					.append("cpfTitular", cartao.cpfTitular)
-					.append("dataEmissao", cartao.dataEmissao)
-					.append("_id", cartao.id)
-					.append("id", cartao.id)
-					.append("nomeTitular", cartao.nomeTitular)
-					.append("numero", cartao.numero)
-					.append("saldo", cartao.saldo)
-					.append("validade", cartao.validade);
-			
+
+			Document document = new Document().append("bloqueado", cartao.bloqueado)
+					.append("cpfTitular", cartao.cpfTitular).append("dataEmissao", cartao.dataEmissao)
+					.append("_id", cartao.id).append("id", cartao.id).append("nomeTitular", cartao.nomeTitular)
+					.append("numero", cartao.numero).append("saldo", cartao.saldo).append("validade", cartao.validade);
+
 			collection.insertOne(document);
 			listCPF.add(cartao.cpfTitular);
 		}
-		
-		
+
 		return Response.ok(listCPF).build();
 	}
-	
+
 }
