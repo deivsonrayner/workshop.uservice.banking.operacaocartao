@@ -41,7 +41,7 @@ public class CartoesService {
 	}
 	
 	public MongoCollection<Document> getCollection(String name) {
-		MongoDatabase dataservice = this.getMongoClient().getDatabase("operacoescartaodb.v1.0");
+		MongoDatabase dataservice = this.getMongoClient().getDatabase("operacoescartaodbv10");
 		return  (MongoCollection<Document>) dataservice.getCollection(name);
 	}
 	
