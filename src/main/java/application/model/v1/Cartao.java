@@ -11,7 +11,7 @@ public class Cartao {
 	public String nomeTitular;
 	public String cpfTitular;
 	public Boolean bloqueado;
-	public BigDecimal saldo;
+	public Double saldo;
 	public String numero;
 	
 

@@ -41,7 +41,7 @@ public class CartoesService {
 	}
 	
 	public MongoCollection<Document> getCollection(String name) {
-		MongoDatabase dataservice = this.getMongoClient().getDatabase("operacoescartaodb");
+		MongoDatabase dataservice = this.getMongoClient().getDatabase("operacoescartaodb.v1.0");
 		return  (MongoCollection<Document>) dataservice.getCollection(name);
 	}
 	
@@ -62,7 +62,7 @@ public class CartoesService {
 			cartao.id = document.getString("id");
 			cartao.nomeTitular = document.getString("nomeTitular");
 			cartao.numero = document.getString("numero");
-			cartao.saldo = new BigDecimal(document.getDouble("saldo"));
+			cartao.saldo = document.getDouble("saldo");
 			cartao.validade = document.getDate("validade");
 			cartaoCol.add(cartao);
 		}
