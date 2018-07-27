@@ -40,7 +40,7 @@ public class CartoesService {
 	
 	public String getMongoHost() {
 		Config config = ConfigProvider.getConfig();
-		return config.getValue("mongo.remote.url", String.class);
+		return config.getValue("MONGO_REMOTE_URL", String.class);
 	}
 	
 	public MongoCollection<Document> getCollection(String name) {
