@@ -13,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.bson.Document;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -37,7 +39,8 @@ public class CartoesService {
 	}
 	
 	public String getMongoHost() {
-		return "mongodb:// 169.57.160.83:27017";
+		Config config = ConfigProvider.getConfig();
+		return config.getValue("mongo.remote.url", String.class);
 	}
 	
 	public MongoCollection<Document> getCollection(String name) {
