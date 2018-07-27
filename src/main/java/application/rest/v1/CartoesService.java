@@ -30,10 +30,9 @@ import application.util.GeradorCartaoUtil;
 @Path("v1/cartoes")
 public class CartoesService {
 
-	
 	protected static MongoClient mongoRemoteClient = null;
 	protected static MongoClient mongoLocalClient = null;
-
+	
 	public MongoClient getMongoClient(boolean isLocal) {
 		if (isLocal) {
 			if (this.mongoLocalClient == null) {
@@ -77,7 +76,7 @@ public class CartoesService {
 			cartao.bloqueado = document.getBoolean("bloqueado");
 			cartao.cpfTitular = document.getString("cpfTitular");
 			cartao.dataEmissao = document.getDate("dataEmissao");
-			cartao.id = document.getString("id");
+			cartao.id = document.getString("id").trim();
 			cartao.nomeTitular = document.getString("nomeTitular");
 			cartao.numero = document.getString("numero");
 			cartao.saldo = document.getDouble("saldo");
