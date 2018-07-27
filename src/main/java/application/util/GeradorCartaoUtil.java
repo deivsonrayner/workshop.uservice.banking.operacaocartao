@@ -57,7 +57,7 @@ public class GeradorCartaoUtil {
 	};
 	
 	public static String gerarNome() {
-		int idx = GeradorCartaoUtil.getRandomNumberInRange(1, nomes.length);
+		int idx = GeradorCartaoUtil.getRandomNumberInRange(0, nomes.length-1);
 		return nomes[idx];
 	}
 	
