@@ -30,6 +30,16 @@ spec:
             cpu: "{{ .Values.image.resources.requests.cpu }}"
             memory: "{{ .Values.image.resources.requests.memory }}"
         env:
+          - name: MONGO_REMOTE_URL
+            valueFrom:
+              secretKeyRef:
+                name: "{{  .Chart.Name }}-config"
+                key: MONGO_REMOTE_URL
+          - name: MONGO_LOCAL_URL
+            valueFrom:
+              secretKeyRef:
+                name: "{{  .Chart.Name }}-config"
+                key: MONGO_LOCAL_URL      
           - name: PORT
             value: "{{ .Values.service.servicePort }}"
           - name: APPLICATION_NAME
