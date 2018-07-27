@@ -1,5 +1,6 @@
 package application.rest.v1;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -14,28 +15,66 @@ import javax.ws.rs.core.Response;
 
 import org.bson.BasicBSONEncoder;
 import org.bson.BasicBSONObject;
+import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 import application.model.v1.Cartao;
 import application.util.GeradorCartaoUtil;
+import junit.framework.TestResult;
 
 @Path("v1/cartoes")
 public class CartoesService {
 	
-	@Resource(name = "dataservice/remote/cartoes")
-	protected DB dataservice;
+	protected static MongoClient mongoClient = null;
+	
+	public MongoClient getMongoClient() {
+		if (this.mongoClient == null) {
+			this.mongoClient = MongoClients.create(this.getMongoHost());
+		}
+		
+		return this.mongoClient;
+	}
+	
+	public String getMongoHost() {
+		return "mongodb:// 169.57.160.83:27017";
+	}
+	
+	public MongoCollection<Document> getCollection(String name) {
+		MongoDatabase dataservice = this.getMongoClient().getDatabase("operacoescartaodb");
+		return  (MongoCollection<Document>) dataservice.getCollection(name);
+	}
 	
 	
 	 @GET
 	 @Produces(MediaType.APPLICATION_JSON)
 	public Response listarcartoes( @PathParam("cpf") String cpf) {
+		MongoCollection<Document> collection = this.getCollection("cartoes");
+		FindIterable<Document> result =  collection.find(new Document("cpfTitular",cpf));
+		Collection<Cartao> cartaoCol = new ArrayList<Cartao>();
 		
-		return null;
+		for (Document document : result) {
+			Cartao cartao = new Cartao();
+			cartao.bloqueado = document.getBoolean("bloqueado");
+			cartao.cpfTitular = document.getString("cpfTitular");
+			cartao.dataEmissao = document.getDate("dataEmissao");
+			cartao.id = document.getString("id");
+			cartao.nomeTitular = document.getString("nomeTitular");
+			cartao.numero = document.getString("numero");
+			cartao.saldo = new BigDecimal(document.getDouble("saldo"));
+			cartao.validade = document.getDate("validade");
+			cartaoCol.add(cartao);
+		}
+		
+		return Response.ok(cartaoCol).build();
 		
 	}
 	
@@ -52,25 +91,24 @@ public class CartoesService {
 	 @Path("carregardados")
 	 @Produces(MediaType.APPLICATION_JSON)
 	public Response cargaDados(@QueryParam("isLocal") Boolean local) {
+		 
+		MongoCollection<Document> collection = this.getCollection("cartoes");
 		
-		
-		MongoCollection<DBObject> collection = (MongoCollection<DBObject>) dataservice.getCollection("cartoes");
 		Collection<String> listCPF = new ArrayList<String>();
 		Collection<Cartao> cartoes = GeradorCartaoUtil.gerarCartao();
 		
 		for (Cartao cartao : cartoes) {
 			
-			DBObject document = BasicDBObjectBuilder.start()
-					.add("bloqueado", cartao.bloqueado)
-					.add("cpfTitular", cartao.cpfTitular)
-					.add("dataEmissao", cartao.dataEmissao)
-					.add("_id", cartao.id)
-					.add("id", cartao.id)
-					.add("nomeTitular", cartao.nomeTitular)
-					.add("numero", cartao.numero)
-					.add("saldo", cartao.saldo)
-					.add("validade", cartao.validade)
-					.get();
+			Document document = new Document()
+					.append("bloqueado", cartao.bloqueado)
+					.append("cpfTitular", cartao.cpfTitular)
+					.append("dataEmissao", cartao.dataEmissao)
+					.append("_id", cartao.id)
+					.append("id", cartao.id)
+					.append("nomeTitular", cartao.nomeTitular)
+					.append("numero", cartao.numero)
+					.append("saldo", cartao.saldo)
+					.append("validade", cartao.validade);
 			
 			collection.insertOne(document);
 			listCPF.add(cartao.cpfTitular);

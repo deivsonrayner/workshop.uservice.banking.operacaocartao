@@ -3,8 +3,8 @@ MAINTAINER IBM Java engineering at IBM Cloud
 COPY /target/liberty/wlp/usr/servers/defaultServer /config/
 COPY /target/liberty/wlp/usr/shared/resources /config/resources/
 COPY /src/main/liberty/config/jvmbx.options /config/jvm.options
-RUN mkdir -m 777 -p /config/lib
-COPY /src/main/liberty/lib/* /config/lib/
+#RUN mkdir -m 777 -p /config/lib
+#COPY /src/main/liberty/lib/* /config/lib/
 
 # Install required features if not present, install APM Data Collector
 RUN installUtility install --acceptLicense defaultServer && installUtility install --acceptLicense apmDataCollector-7.4
