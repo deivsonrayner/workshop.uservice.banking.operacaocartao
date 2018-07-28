@@ -33,8 +33,8 @@ import application.model.v1.Cartao;
 @ApplicationScoped
 public class MongoService {
 	
-	protected static MongoClient mongoRemoteClient = null;
-	protected static MongoClient mongoLocalClient = null;
+	protected  MongoClient mongoRemoteClient = null;
+	protected  MongoClient mongoLocalClient = null;
 	
 	public MongoClient getMongoClient(boolean isLocal) {
 		if (isLocal) {
