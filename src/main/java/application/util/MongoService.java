@@ -1,6 +1,8 @@
 package application.util;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -24,8 +26,10 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
+import com.mongodb.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -35,15 +39,17 @@ import application.model.v1.Cartao;
 @ApplicationScoped
 public class MongoService {
 	
-	MongoClient mongoRemoteClient = null;
-	MongoClient mongoLocalClient = null;
+	com.mongodb.client.MongoClient mongoRemoteClient = null;
+	com.mongodb.client.MongoClient mongoLocalClient = null;
 	Logger logger = Logger.getAnonymousLogger();
 	
 	public MongoService() {
 		
 	}
 	
-	public MongoClient getMongoClient(boolean isLocal) {
+
+	
+	public com.mongodb.client.MongoClient getMongoClient(boolean isLocal) {
 		if (isLocal) {
 			if (this.mongoLocalClient == null) {
 				this.mongoLocalClient = MongoClients.create(this.getMongoLocalHost());
