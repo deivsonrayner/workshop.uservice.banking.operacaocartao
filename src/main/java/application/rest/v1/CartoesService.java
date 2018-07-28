@@ -40,7 +40,7 @@ public class CartoesService {
 		Document pesquisa = new Document("cpfTitular", cpf);
 		Collection<Cartao> cartaoCol = null;
 
-		cartaoCol = mongoService.pesquisar(pesquisa, "cartoes").get();
+		cartaoCol = mongoService.pesquisar(pesquisa, "cartoes");
 		
 		logger.log(Level.INFO, "RETURN [pesquisar] - Size: "+cartaoCol.size());
 		

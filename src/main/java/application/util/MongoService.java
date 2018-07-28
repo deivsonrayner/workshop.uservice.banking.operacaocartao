@@ -94,23 +94,22 @@ public class MongoService {
 	@Fallback(fallbackMethod="pesquisarFallBack")
 	@Retry(maxRetries=2, maxDuration=2000, delay=500)
 	@Timeout(5000)
-	@Asynchronous
-	public Future<Collection<Cartao>> pesquisar(Document document, String collectionName) throws Exception {
+	public Collection<Cartao> pesquisar(Document document, String collectionName) throws Exception {
 		logger.log(Level.INFO, "pesquisar [getCollection] - Name: "+collectionName);
 		MongoCollection<Document> collection = this.getCollection("cartoes",false);
 		FindIterable<Document> result = collection.find(document);
 		logger.log(Level.INFO, "Return [find] - toString: "+result.toString());
 		Collection<Cartao> cartaoCol = transformaRetorno(result);
-		return CompletableFuture.completedFuture(cartaoCol);
+		return cartaoCol;
 	}
 	
-	public Future<Collection<Cartao>> pesquisarFallBack(Document document, String collectionName) throws Exception {
+	public Collection<Cartao> pesquisarFallBack(Document document, String collectionName) throws Exception {
 		logger.log(Level.INFO, "pesquisar FallBack [getCollection] - Name: "+collectionName);
 		MongoCollection<Document> collection = this.getCollection("cartoes",true);
 		FindIterable<Document> result = collection.find(document);
 		logger.log(Level.INFO, "Return [find] - toString: "+result.toString());
 		Collection<Cartao> cartaoCol = transformaRetorno(result);
-		return CompletableFuture.completedFuture(cartaoCol);
+		return cartaoCol;
 	}
 
 }
