@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
@@ -97,6 +98,7 @@ public class CartoesService {
 	@Fallback(fallbackMethod="pesquisarFallBack")
 	@Retry(maxRetries=2, maxDuration=5000, delay=1000)
 	@Timeout(5000)
+	@Asynchronous
 	public Collection<Cartao> pesquisar(Document document, String collectionName) {
 		MongoCollection<Document> collection = this.getCollection("cartoes",false);
 		FindIterable<Document> result = collection.find(document);
