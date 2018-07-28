@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -33,8 +35,13 @@ import application.model.v1.Cartao;
 @ApplicationScoped
 public class MongoService {
 	
-	protected  MongoClient mongoRemoteClient = null;
-	protected  MongoClient mongoLocalClient = null;
+	public  MongoClient mongoRemoteClient = null;
+	public  MongoClient mongoLocalClient = null;
+	Logger logger = Logger.getAnonymousLogger();
+	
+	public MongoService() {
+		
+	}
 	
 	public MongoClient getMongoClient(boolean isLocal) {
 		if (isLocal) {
@@ -65,7 +72,7 @@ public class MongoService {
 		return (MongoCollection<Document>) dataservice.getCollection(name);
 	}
 	
-	private Collection<Cartao> transformaRetorno(FindIterable<Document> result) {
+	public Collection<Cartao> transformaRetorno(FindIterable<Document> result) {
 		Collection<Cartao> cartaoCol = new ArrayList<Cartao>();
 		
 		for (Document document : result) {
@@ -85,19 +92,23 @@ public class MongoService {
 	
 	//@CircuitBreaker(requestVolumeThreshold=2, failureRatio=0.50, delay=5000, successThreshold=2)
 	@Fallback(fallbackMethod="pesquisarFallBack")
-	@Retry(maxRetries=2, maxDuration=5000, delay=1000)
+	@Retry(maxRetries=2, maxDuration=2000, delay=500)
 	@Timeout(5000)
 	@Asynchronous
 	public Future<Collection<Cartao>> pesquisar(Document document, String collectionName) throws Exception {
+		logger.log(Level.INFO, "pesquisar [getCollection] - Name: "+collectionName);
 		MongoCollection<Document> collection = this.getCollection("cartoes",false);
 		FindIterable<Document> result = collection.find(document);
+		logger.log(Level.INFO, "Return [find] - toString: "+result.toString());
 		Collection<Cartao> cartaoCol = transformaRetorno(result);
 		return CompletableFuture.completedFuture(cartaoCol);
 	}
 	
 	public Future<Collection<Cartao>> pesquisarFallBack(Document document, String collectionName) throws Exception {
+		logger.log(Level.INFO, "pesquisar FallBack [getCollection] - Name: "+collectionName);
 		MongoCollection<Document> collection = this.getCollection("cartoes",true);
 		FindIterable<Document> result = collection.find(document);
+		logger.log(Level.INFO, "Return [find] - toString: "+result.toString());
 		Collection<Cartao> cartaoCol = transformaRetorno(result);
 		return CompletableFuture.completedFuture(cartaoCol);
 	}

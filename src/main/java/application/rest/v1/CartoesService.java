@@ -3,6 +3,8 @@ package application.rest.v1;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -27,17 +29,20 @@ public class CartoesService {
 
 	@Inject
 	MongoService mongoService;
+	Logger logger = Logger.getAnonymousLogger();
 
 	
 	@GET
 	@Path("listar")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response listarcartoes(@QueryParam("cpf") String cpf) throws InterruptedException, ExecutionException, Exception {
+		logger.log(Level.INFO, "CALL [listarcartoes] - CPF: "+cpf);
 		Document pesquisa = new Document("cpfTitular", cpf);
 		Collection<Cartao> cartaoCol = null;
 
 		cartaoCol = mongoService.pesquisar(pesquisa, "cartoes").get();
-
+		
+		logger.log(Level.INFO, "RETURN [pesquisar] - Size: "+cartaoCol.size());
 		
 		return Response.ok(cartaoCol).build();
 	}
