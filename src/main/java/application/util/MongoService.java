@@ -78,7 +78,7 @@ public class MongoService {
 		return (MongoCollection<Document>) dataservice.getCollection(name);
 	}
 	
-	public Collection<Cartao> transformaRetorno(FindIterable<Document> result) {
+	public Collection<Cartao> transformaRetorno(FindIterable<Document> result, String fonte) {
 		Collection<Cartao> cartaoCol = new ArrayList<Cartao>();
 		
 		for (Document document : result) {
@@ -86,7 +86,7 @@ public class MongoService {
 			cartao.bloqueado = document.getBoolean("bloqueado");
 			cartao.cpfTitular = document.getString("cpfTitular");
 			cartao.dataEmissao = document.getDate("dataEmissao");
-			cartao.id = document.getString("id").trim();
+			cartao.id = document.getString("id").trim()+"@"+fonte;
 			cartao.nomeTitular = document.getString("nomeTitular");
 			cartao.numero = document.getString("numero");
 			cartao.saldo = document.getDouble("saldo");
@@ -105,7 +105,7 @@ public class MongoService {
 		MongoCollection<Document> collection = this.getCollection("cartoes",false);
 		FindIterable<Document> result = collection.find(document);
 		logger.log(Level.INFO, "Return [find] - toString: "+result.toString());
-		Collection<Cartao> cartaoCol = transformaRetorno(result);
+		Collection<Cartao> cartaoCol = transformaRetorno(result, "REMOTO");
 		return cartaoCol;
 	}
 	
@@ -114,7 +114,7 @@ public class MongoService {
 		MongoCollection<Document> collection = this.getCollection("cartoes",true);
 		FindIterable<Document> result = collection.find(document);
 		logger.log(Level.INFO, "Return [find] - toString: "+result.toString());
-		Collection<Cartao> cartaoCol = transformaRetorno(result);
+		Collection<Cartao> cartaoCol = transformaRetorno(result, "LOCAL");
 		return cartaoCol;
 	}
 
