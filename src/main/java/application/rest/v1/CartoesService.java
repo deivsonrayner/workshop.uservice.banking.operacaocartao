@@ -2,6 +2,9 @@ package application.rest.v1;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
@@ -71,7 +74,13 @@ public class CartoesService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response listarcartoes(@QueryParam("cpf") String cpf) {
 		Document pesquisa = new Document("cpfTitular", cpf);
-		Collection<Cartao> cartaoCol = this.pesquisar(pesquisa, "cartoes");
+		Collection<Cartao> cartaoCol = null;
+		try {
+			cartaoCol = this.pesquisar(pesquisa, "cartoes").get();
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		return Response.ok(cartaoCol).build();
 	}
@@ -99,18 +108,18 @@ public class CartoesService {
 	@Retry(maxRetries=2, maxDuration=5000, delay=1000)
 	@Timeout(5000)
 	@Asynchronous
-	public Collection<Cartao> pesquisar(Document document, String collectionName) {
+	public Future<Collection<Cartao>> pesquisar(Document document, String collectionName) {
 		MongoCollection<Document> collection = this.getCollection("cartoes",false);
 		FindIterable<Document> result = collection.find(document);
 		Collection<Cartao> cartaoCol = transformaRetorno(result);
-		return cartaoCol;
+		return CompletableFuture.completedFuture(cartaoCol);
 	}
 	
-	public Collection<Cartao> pesquisarFallBack(Document document, String collectionName) {
+	public Future<Collection<Cartao>> pesquisarFallBack(Document document, String collectionName) {
 		MongoCollection<Document> collection = this.getCollection("cartoes",true);
 		FindIterable<Document> result = collection.find(document);
 		Collection<Cartao> cartaoCol = transformaRetorno(result);
-		return cartaoCol;
+		return CompletableFuture.completedFuture(cartaoCol);
 	}
 	
 
