@@ -16,6 +16,8 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -91,8 +93,10 @@ public class CartoesService {
 		return cartaoCol;
 	}
 	
+	//@CircuitBreaker(requestVolumeThreshold=2, failureRatio=0.50, delay=5000, successThreshold=2)
 	@Fallback(fallbackMethod="pesquisarFallBack")
-	@CircuitBreaker(requestVolumeThreshold=2, failureRatio=0.50, delay=5000, successThreshold=2)
+	@Retry(maxRetries=2, maxDuration=5000, delay=1000)
+	@Timeout(5000)
 	public Collection<Cartao> pesquisar(Document document, String collectionName) {
 		MongoCollection<Document> collection = this.getCollection("cartoes",false);
 		FindIterable<Document> result = collection.find(document);
