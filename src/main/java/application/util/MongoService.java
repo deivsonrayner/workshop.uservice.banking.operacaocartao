@@ -35,8 +35,8 @@ import application.model.v1.Cartao;
 @ApplicationScoped
 public class MongoService {
 	
-	public  MongoClient mongoRemoteClient = null;
-	public  MongoClient mongoLocalClient = null;
+	MongoClient mongoRemoteClient = null;
+	MongoClient mongoLocalClient = null;
 	Logger logger = Logger.getAnonymousLogger();
 	
 	public MongoService() {
