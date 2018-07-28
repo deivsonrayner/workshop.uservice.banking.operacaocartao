@@ -68,7 +68,12 @@ public class CartoesService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response listarcartoes(@QueryParam("cpf") String cpf) {
 		Document pesquisa = new Document("cpfTitular", cpf);
-		FindIterable<Document> result = this.pesquisar(pesquisa, "cartoes");
+		Collection<Cartao> cartaoCol = this.pesquisar(pesquisa, "cartoes");
+		
+		return Response.ok(cartaoCol).build();
+	}
+
+	private Collection<Cartao> transformaRetorno(FindIterable<Document> result) {
 		Collection<Cartao> cartaoCol = new ArrayList<Cartao>();
 		
 		for (Document document : result) {
@@ -83,24 +88,23 @@ public class CartoesService {
 			cartao.validade = document.getDate("validade");
 			cartaoCol.add(cartao);
 		}
-
-		return Response.ok(cartaoCol).build();
+		return cartaoCol;
 	}
 	
 	@Fallback(fallbackMethod="pesquisarFallBack")
 	@CircuitBreaker(requestVolumeThreshold=2, failureRatio=0.50, delay=5000, successThreshold=2)
-	public FindIterable<Document> pesquisar(Document document, String collectionName) {
+	public Collection<Cartao> pesquisar(Document document, String collectionName) {
 		MongoCollection<Document> collection = this.getCollection("cartoes",false);
 		FindIterable<Document> result = collection.find(document);
-		
-		return result;
+		Collection<Cartao> cartaoCol = transformaRetorno(result);
+		return cartaoCol;
 	}
 	
-	public FindIterable<Document> pesquisarFallBack(Document document, String collectionName) {
+	public Collection<Cartao> pesquisarFallBack(Document document, String collectionName) {
 		MongoCollection<Document> collection = this.getCollection("cartoes",true);
 		FindIterable<Document> result = collection.find(document);
-		
-		return result;
+		Collection<Cartao> cartaoCol = transformaRetorno(result);
+		return cartaoCol;
 	}
 	
 
