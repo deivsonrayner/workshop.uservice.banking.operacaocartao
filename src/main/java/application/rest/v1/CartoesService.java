@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -31,42 +32,15 @@ import com.mongodb.client.MongoDatabase;
 
 import application.model.v1.Cartao;
 import application.util.GeradorCartaoUtil;
+import application.util.MongoService;
 
-@ApplicationScoped
 @Path("v1/cartoes")
 public class CartoesService {
 
-	protected static MongoClient mongoRemoteClient = null;
-	protected static MongoClient mongoLocalClient = null;
-	
-	public MongoClient getMongoClient(boolean isLocal) {
-		if (isLocal) {
-			if (this.mongoLocalClient == null) {
-				this.mongoLocalClient = MongoClients.create(this.getMongoLocalHost());
-			}
-			return this.mongoLocalClient;
-		} else {
-			if (this.mongoRemoteClient == null) {
-				this.mongoRemoteClient = MongoClients.create(this.getMongoRemoteHost());
-			}
-			return this.mongoRemoteClient;
-		}
-	}
 
-	public String getMongoRemoteHost() {
-		Config config = ConfigProvider.getConfig();
-		return config.getValue("MONGO_REMOTE_URL", String.class);
-	}
-	
-	public String getMongoLocalHost() {
-		Config config = ConfigProvider.getConfig();
-		return config.getValue("MONGO_LOCAL_URL", String.class);
-	}
 
-	public MongoCollection<Document> getCollection(String name, boolean isLocal) {
-		MongoDatabase dataservice = this.getMongoClient(isLocal).getDatabase("operacoescartaodbv10");
-		return (MongoCollection<Document>) dataservice.getCollection(name);
-	}
+	@Inject
+	MongoService mongoService;
 
 	
 	@GET
@@ -76,67 +50,20 @@ public class CartoesService {
 		Document pesquisa = new Document("cpfTitular", cpf);
 		Collection<Cartao> cartaoCol = null;
 		try {
-			cartaoCol = this.pesquisar(pesquisa, "cartoes").get();
-		} catch (InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			cartaoCol = mongoService.pesquisar(pesquisa, "cartoes").get();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		
 		return Response.ok(cartaoCol).build();
 	}
-
-	private Collection<Cartao> transformaRetorno(FindIterable<Document> result) {
-		Collection<Cartao> cartaoCol = new ArrayList<Cartao>();
-		
-		for (Document document : result) {
-			Cartao cartao = new Cartao();
-			cartao.bloqueado = document.getBoolean("bloqueado");
-			cartao.cpfTitular = document.getString("cpfTitular");
-			cartao.dataEmissao = document.getDate("dataEmissao");
-			cartao.id = document.getString("id").trim();
-			cartao.nomeTitular = document.getString("nomeTitular");
-			cartao.numero = document.getString("numero");
-			cartao.saldo = document.getDouble("saldo");
-			cartao.validade = document.getDate("validade");
-			cartaoCol.add(cartao);
-		}
-		return cartaoCol;
-	}
 	
-	//@CircuitBreaker(requestVolumeThreshold=2, failureRatio=0.50, delay=5000, successThreshold=2)
-	@Fallback(fallbackMethod="pesquisarFallBack")
-	@Retry(maxRetries=2, maxDuration=5000, delay=1000)
-	@Timeout(5000)
-	@Asynchronous
-	public Future<Collection<Cartao>> pesquisar(Document document, String collectionName) {
-		MongoCollection<Document> collection = this.getCollection("cartoes",false);
-		FindIterable<Document> result = collection.find(document);
-		Collection<Cartao> cartaoCol = transformaRetorno(result);
-		return CompletableFuture.completedFuture(cartaoCol);
-	}
-	
-	public Future<Collection<Cartao>> pesquisarFallBack(Document document, String collectionName) {
-		MongoCollection<Document> collection = this.getCollection("cartoes",true);
-		FindIterable<Document> result = collection.find(document);
-		Collection<Cartao> cartaoCol = transformaRetorno(result);
-		return CompletableFuture.completedFuture(cartaoCol);
-	}
-	
-
-	public void dataserviceOperation() {
-
-	}
-
-	public void dataserviceOperationFallBack() {
-
-	}
-
 	@GET
 	@Path("carregardados")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response cargaDados(@QueryParam("isLocal") Boolean local) {
 
-		MongoCollection<Document> collection = this.getCollection("cartoes", local);
+		MongoCollection<Document> collection = mongoService.getCollection("cartoes", local);
 
 		Collection<String> listCPF = new ArrayList<String>();
 		Collection<Cartao> cartoes = GeradorCartaoUtil.gerarCartao();
@@ -154,5 +81,7 @@ public class CartoesService {
 
 		return Response.ok(listCPF).build();
 	}
+
+
 
 }
