@@ -99,7 +99,7 @@ public class MongoService {
 		MongoCollection<Document> collection = this.getCollection("cartoes",true);
 		FindIterable<Document> result = collection.find(document);
 		logger.log(Level.INFO, "Return [find] - toString: "+result.toString());
-		Collection<Cartao> cartaoCol = transformaRetorno(result, "LOCALLOCAL");
+		Collection<Cartao> cartaoCol = transformaRetorno(result, "LOCAL");
 		return cartaoCol;
 	}
 
